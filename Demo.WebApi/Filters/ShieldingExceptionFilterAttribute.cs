@@ -11,6 +11,11 @@ namespace Demo.WebApi.Filters
     {
         private readonly ILog _logger = LogManager.GetCurrentClassLogger();
 
+        public ShieldingExceptionFilterAttribute()
+        {
+            GenerateNewGuid = Guid.NewGuid;
+        }
+
         /// <summary>
         /// This filter should do the following:
         /// 1.  Log the details of the unhandled exception.
@@ -20,19 +25,14 @@ namespace Demo.WebApi.Filters
         /// <param name="actionExecutedContext"></param>
         public override void OnException(HttpActionExecutedContext actionExecutedContext)
         {
-            if (actionExecutedContext.Exception != null)
-            {
-                var id = Guid.NewGuid();
-                LogException(actionExecutedContext.Exception, id);
+            var id = GenerateNewGuid();
+            LogException(actionExecutedContext.Exception, id);
 
-                var response = GetGenericErrorResponse(actionExecutedContext, id);
-                actionExecutedContext.Response = response;
-            }
-            else
-            {
-                base.OnException(actionExecutedContext);
-            }
+            var response = GetGenericErrorResponse(actionExecutedContext, id);
+            actionExecutedContext.Response = response;
         }
+
+        public Func<Guid> GenerateNewGuid { get; set; }
 
         private static HttpResponseMessage GetGenericErrorResponse(HttpActionExecutedContext actionExecutedContext, Guid id)
         {
